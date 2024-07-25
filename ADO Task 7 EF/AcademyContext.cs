@@ -27,6 +27,8 @@ public class AcademyContext : DbContext
         modelBuilder.Entity<Group>().ToTable(g => g.HasCheckConstraint("CK_Group_Rating", "Rating >= 0 AND Rating <= 5"));
         modelBuilder.Entity<Group>().Property(g => g.Year).IsRequired();        modelBuilder.Entity<Group>().ToTable(g => g.HasCheckConstraint("CK_Group_Year", "Year >= 1 AND Year <= 5"));
         modelBuilder.Entity<Group>().ToTable(g => g.HasCheckConstraint("CK_Group_Name", "Name != '' "));
+        modelBuilder.Entity<Group>().HasMany(g => g.Teachers).WithMany(t => t.Groups);
+
 
         modelBuilder.Entity<Department>().Property(d => d.DepartmentId).IsRequired().HasColumnName("Id").ValueGeneratedOnAdd();
         modelBuilder.Entity<Department>().Property(d => d.Financing).IsRequired().HasColumnType("money");
@@ -35,28 +37,34 @@ public class AcademyContext : DbContext
         modelBuilder.Entity<Department>().ToTable(d => d.HasCheckConstraint("CK_Department_Name", "Name != '' "));
         modelBuilder.Entity<Department>().Property(d => d.Name).IsRequired().HasMaxLength(100);
         modelBuilder.Entity<Department>().HasIndex(d => d.Name).IsUnique();
+        
 
         modelBuilder.Entity<Faculty>().Property(f => f.FacultyId).IsRequired().HasColumnName("Id").ValueGeneratedOnAdd();
         modelBuilder.Entity<Faculty>().Property(f => f.Name).IsRequired().HasMaxLength(100);        modelBuilder.Entity<Faculty>().HasIndex(f => f.Name).IsUnique();
         modelBuilder.Entity<Faculty>().ToTable(f => f.HasCheckConstraint("CK_Department_Name", "Name != '' "));
+        
 
         modelBuilder.Entity<Teacher>().Property(t => t.TeacherId).IsRequired().HasColumnName("Id").ValueGeneratedOnAdd();
         modelBuilder.Entity<Teacher>().Property(t => t.EmploymentDate).IsRequired().HasColumnType("datetime");
         modelBuilder.Entity<Teacher>().ToTable(t => t.HasCheckConstraint("CK_Teacher_Date", "EmploymentDate >= 1990/01/01 "));
         modelBuilder.Entity<Teacher>().Property(t => t.FirstName).IsRequired().HasColumnName("Name");
-        modelBuilder.Entity<Teacher>().Property(t => t.Premium).IsRequired().HasDefaultValue(0);
+        modelBuilder.Entity<Teacher>().Property(t => t.Premium).IsRequired().HasDefaultValue(0).HasColumnType("money");
         modelBuilder.Entity<Teacher>().ToTable(t => t.HasCheckConstraint("CK_Teacher_Premium", "Premium >= 0"));
         modelBuilder.Entity<Teacher>().Property(t => t.Salary).IsRequired().HasColumnType("money");
         modelBuilder.Entity<Teacher>().ToTable(t => t.HasCheckConstraint("CK_Teacher_Salary", "Salary > 0"));
         modelBuilder.Entity<Teacher>().Property(t => t.LastName).IsRequired().HasColumnName("Surname");
         modelBuilder.Entity<Teacher>().ToTable(t => t.HasCheckConstraint("CK_Teacher_Name", "Name != '' "));
         modelBuilder.Entity<Teacher>().ToTable(t => t.HasCheckConstraint("CK_Teacher_Surname", "Surname != '' "));
+        modelBuilder.Entity<Teacher>().HasOne(t => t.Department).WithMany(d => d.Teachers).HasForeignKey(x => x.DepartmentId).OnDelete(DeleteBehavior.Cascade).HasConstraintName("Fk_Departments");
 
         modelBuilder.Entity<Student>().Property(s => s.StudentId).IsRequired().HasColumnName("Id").ValueGeneratedOnAdd();
         modelBuilder.Entity<Student>().Property(s => s.FirstName).IsRequired().HasColumnName("Name");
         modelBuilder.Entity<Student>().Property(s => s.LastName).IsRequired().HasColumnName("Surname");
         modelBuilder.Entity<Student>().ToTable(t => t.HasCheckConstraint("CK_Student_Name", "Name != '' "));
         modelBuilder.Entity<Student>().ToTable(t => t.HasCheckConstraint("CK_Student_Surname", "Surname != '' "));
+        modelBuilder.Entity<Student>().HasOne(s => s.Group).WithMany(g => g.Students).HasForeignKey(x => x.GroupId).HasConstraintName("FK_Groups").OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Student>().HasOne(s => s.Faculty).WithMany(f => f.Students).HasForeignKey(x => x.FacultyId).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_Faculites");
+
     }
 
 }

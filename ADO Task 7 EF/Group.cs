@@ -9,8 +9,8 @@ public class Group
     public int Rating { get; set; }
     public int Year { get; set; }
     public IEnumerable<Student> Students { get; set; }
-    public int TeacherId { get; set; }
-    public Teacher Teacher { get; set; }
+    //public int TeacherId { get; set; }
+    public IEnumerable<Teacher> Teachers { get; set; }
     public override string ToString()
     {
         return Name;
